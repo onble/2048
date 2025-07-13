@@ -1,4 +1,4 @@
-import { _decorator, Component, LabelComponent, Node, sys } from "cc";
+import { _decorator, Component, instantiate, LabelComponent, Node, Prefab, sys, UITransform, v2, v3, warn } from "cc";
 const { ccclass, property } = _decorator;
 
 @ccclass("Game")
@@ -24,7 +24,22 @@ export class Game extends Component {
     @property(LabelComponent)
     txtBack: LabelComponent = null!;
 
+    @property(Node)
+    ndParent: Node = null!;
+
+    @property(UITransform)
+    ndParentTransform: UITransform = null!;
+
+    @property(Prefab)
+    item: Prefab = null!;
+
+    @property(Prefab)
+    itemBg: Prefab = null!;
+
     private userData: any = null;
+    private jiange: number = 0;
+    private itemWH: number = 0;
+    private itemParentWh: number = 0;
 
     start() {
         this.initPanel();
@@ -62,10 +77,36 @@ export class Game extends Component {
 
     private updateView() {
         let lv = this.userData.lv;
+        this.jiange = 5;
+        this.itemWH = Math.round(640 / lv);
+        this.itemParentWh = this.itemWH * lv + this.jiange * (lv + 1);
+        this.ndParentTransform.width = this.itemParentWh;
+        this.ndParentTransform.height = this.itemParentWh;
+        this.addItemBg(lv);
+
         this.txtLv.string = lv + "x" + lv;
         this.txtScore.string = this.userData.score.toString();
         this.txtBestScore.string = this.userData.bestScore + "";
         this.txtBack.string = "撤回(" + this.userData.backNum + ")";
+    }
+
+    addItemBg(lv: number) {
+        let posStart = v2(
+            -this.itemParentWh / 2 + this.itemWH / 2 + this.jiange,
+            -this.itemParentWh / 2 + this.itemWH / 2 + this.jiange
+        );
+        for (let i = 0; i < lv; i++) {
+            for (let j = 0; j < lv; j++) {
+                let itemBg = instantiate(this.itemBg);
+                itemBg.parent = this.ndParent;
+                let itemBgTf: UITransform = itemBg.getComponent(UITransform);
+                itemBgTf.width = this.itemWH;
+                itemBgTf.height = this.itemWH;
+                let posX = posStart.x + (itemBgTf.width + this.jiange) * j;
+                let posY = posStart.y + (itemBgTf.height + this.jiange) * i;
+                itemBg.position = v3(posX, posY, 0);
+            }
+        }
     }
 
     // 点击事件

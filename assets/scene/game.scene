@@ -4219,6 +4219,20 @@
     "txtBack": {
       "__id__": 58
     },
+    "ndParent": {
+      "__id__": 71
+    },
+    "ndParentTransform": {
+      "__id__": 72
+    },
+    "item": {
+      "__uuid__": "ea581aac-c837-4b2f-85fc-a717150d9fe3",
+      "__expectedType__": "cc.Prefab"
+    },
+    "itemBg": {
+      "__uuid__": "a7253ba0-5b09-4280-a561-11bb40739bf0",
+      "__expectedType__": "cc.Prefab"
+    },
     "_id": "51LOlBqW9Ac7BZTX6fThH4"
   },
   {
