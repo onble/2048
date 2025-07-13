@@ -733,7 +733,7 @@
         "__id__": 71
       }
     ],
-    "_active": false,
+    "_active": true,
     "_components": [
       {
         "__id__": 74
@@ -1256,7 +1256,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "txtLv",
+    "_name": "txtScore",
     "_objFlags": 0,
     "_parent": {
       "__id__": 29
@@ -1581,7 +1581,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "txtLv",
+    "_name": "txtBestScore",
     "_objFlags": 0,
     "_parent": {
       "__id__": 38
@@ -2096,7 +2096,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "Label",
+    "_name": "txtBack",
     "_objFlags": 512,
     "_parent": {
       "__id__": 55
@@ -4206,6 +4206,18 @@
     },
     "overPanel": {
       "__id__": 75
+    },
+    "txtLv": {
+      "__id__": 26
+    },
+    "txtScore": {
+      "__id__": 35
+    },
+    "txtBestScore": {
+      "__id__": 44
+    },
+    "txtBack": {
+      "__id__": 58
     },
     "_id": "51LOlBqW9Ac7BZTX6fThH4"
   },
