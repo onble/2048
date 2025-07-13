@@ -1,4 +1,19 @@
-import { _decorator, Component, instantiate, LabelComponent, Node, Prefab, sys, UITransform, v2, v3, warn } from "cc";
+import {
+    _decorator,
+    Component,
+    instantiate,
+    LabelComponent,
+    Node,
+    Prefab,
+    sys,
+    tween,
+    UITransform,
+    v2,
+    v3,
+    Vec2,
+    warn,
+} from "cc";
+import { Tile } from "./Tile";
 const { ccclass, property } = _decorator;
 
 @ccclass("Game")
@@ -40,6 +55,7 @@ export class Game extends Component {
     private jiange: number = 0;
     private itemWH: number = 0;
     private itemParentWh: number = 0;
+    private array: number[][] = [];
 
     start() {
         this.initPanel();
@@ -88,6 +104,72 @@ export class Game extends Component {
         this.txtScore.string = this.userData.score.toString();
         this.txtBestScore.string = this.userData.bestScore + "";
         this.txtBack.string = "撤回(" + this.userData.backNum + ")";
+
+        this.initArray(lv);
+        this.addRandomArray();
+    }
+
+    // 初始化数组
+    private initArray(lv: number) {
+        this.array = [];
+        for (let i = 0; i < lv; i++) {
+            this.array[i] = [];
+        }
+
+        for (let i = 0; i < lv; i++) {
+            for (let j = 0; j < lv; j++) {
+                this.array[i][j] = 0;
+            }
+        }
+    }
+
+    // 在空格子上随机添加数字
+    private addRandomArray() {
+        let arr_0: Vec2[] = [];
+        for (let i = 0; i < this.array.length; i++) {
+            for (let j = 0; j < this.array[i].length; j++) {
+                if (this.array[i][j] == 0) {
+                    arr_0.push(v2(i, j));
+                }
+            }
+        }
+        if (arr_0.length != 0) {
+            let i_random = Math.floor(Math.random() * arr_0.length);
+            let ii = arr_0[i_random].x;
+            let jj = arr_0[i_random].y;
+            let randomNum = Math.random() * 10;
+            if (randomNum < 2) {
+                this.array[ii][jj] = 4;
+            } else {
+                this.array[ii][jj] = 2;
+            }
+            this.createItem(arr_0[i_random], this.array[ii][jj], true);
+        }
+    }
+
+    private createItem(pos: Vec2, num: number, isAction = false) {
+        let posStart = v2(
+            -this.itemParentWh / 2 + this.itemWH / 2 + this.jiange,
+            -this.itemParentWh / 2 + this.itemWH / 2 + this.jiange
+        );
+        let item = instantiate(this.item);
+        let tile = item.getComponent(Tile);
+        if (tile) {
+            tile.init(num);
+        }
+        item.parent = this.ndParent;
+        let itemTf: UITransform = item.getComponent(UITransform);
+        itemTf.width = this.itemWH;
+        itemTf.height = this.itemWH;
+        let _x = posStart.x + (itemTf.width + this.jiange) * pos.y;
+        let _y = posStart.y + (itemTf.height + this.jiange) * pos.x;
+        item.position = v3(_x, _y, 0);
+        if (isAction) {
+            item.scale = v3(0, 0, 0);
+            tween(item)
+                .to(0.15, { scale: v3(1, 1, 1) }, { easing: "sineInOut" })
+                .start();
+        }
     }
 
     addItemBg(lv: number) {
