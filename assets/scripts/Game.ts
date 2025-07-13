@@ -1,9 +1,11 @@
 import {
     _decorator,
     Component,
+    EventTouch,
     instantiate,
     LabelComponent,
     Node,
+    NodeEventType,
     Prefab,
     sys,
     tween,
@@ -57,9 +59,58 @@ export class Game extends Component {
     private itemParentWh: number = 0;
     private array: number[][] = [];
 
+    private posStart: Vec2;
+    private posEnd: Vec2;
+    private gameType: number = 0;
+
     start() {
         this.initPanel();
         this.startPanel.active = true;
+        this.addTouch();
+    }
+
+    private addTouch() {
+        this.node.on(NodeEventType.TOUCH_START, this.onTouchStart, this);
+        this.node.on(NodeEventType.TOUCH_MOVE, this.onTouchMove, this);
+        this.node.on(NodeEventType.TOUCH_END, this.onTouchEnd, this);
+        this.node.on(NodeEventType.TOUCH_CANCEL, this.onTouchCancel, this);
+    }
+
+    private onTouchStart(event: EventTouch) {
+        if (this.gameType != 1) return;
+        this.posStart = event.getLocation();
+    }
+    private onTouchMove(event: EventTouch) {
+        if (this.gameType != 1) return;
+    }
+    private onTouchEnd(event: EventTouch) {
+        if (this.gameType != 1) return;
+        this.posEnd = event.getLocation();
+        let xx = this.posEnd.x - this.posStart.x;
+        let yy = this.posEnd.y - this.posStart.y;
+        if (Math.abs(xx) < 10 && Math.abs(yy) < 10) return;
+        if (Math.abs(xx) > Math.abs(yy)) {
+            if (xx > 0) {
+                this.moveItem("you");
+                console.log("右移动");
+            } else {
+                this.moveItem("zuo");
+                console.log("左移动");
+            }
+        } else {
+            if (yy > 0) {
+                this.moveItem("shang");
+                console.log("上移动");
+            } else {
+                this.moveItem("xia");
+                console.log("下移动");
+            }
+        }
+    }
+
+    private moveItem(type: string) {}
+    private onTouchCancel(event: EventTouch) {
+        if (this.gameType != 1) return;
     }
 
     update(deltaTime: number) {}
@@ -92,6 +143,7 @@ export class Game extends Component {
     }
 
     private updateView() {
+        this.gameType = 1;
         let lv = this.userData.lv;
         this.jiange = 5;
         this.itemWH = Math.round(640 / lv);
@@ -204,6 +256,7 @@ export class Game extends Component {
 
     private onBtnHomeClick() {
         this.initPanel();
+        this.gameType = 0;
         this.startPanel.active = true;
     }
 
@@ -213,6 +266,7 @@ export class Game extends Component {
 
     private onOverBtnHomeClick() {
         this.initPanel();
+        this.gameType = 0;
         this.startPanel.active = true;
     }
 }
