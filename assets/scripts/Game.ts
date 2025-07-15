@@ -108,9 +108,104 @@ export class Game extends Component {
         }
     }
 
-    private moveItem(type: string) {}
+    /**
+     * 移动游戏方块并处理合并逻辑
+     * @param type 移动方向类型（目前仅实现"you"方向）
+     * @description
+     * 1. 根据指定方向移动所有可移动方块
+     * 2. 相邻相同数字方块会合并并计分
+     * 3. 移动后会清理并重新创建所有方块
+     * 4. 如果可以移动，会在空白位置生成新方块
+     */
+    private moveItem(type: string) {
+        let canMove: boolean = false;
+        let isGetScore: boolean = false;
+        switch (type) {
+            case "you":
+                for (let j = this.array.length - 2; j >= 0; j--) {
+                    // i从0开始，j从array.length-2(=3)开始，因为array.length-1是边界，不需要移动
+                    for (let i = 0; i < this.array.length; i++) {
+                        // k从0开始
+                        for (let k = 0; k < this.array.length; k++) {
+                            if (
+                                // j=3,k=0,1; j=2,k=0,1,2; j=1,k=0,1,2,3;j=0,k=0,1,2,3,4。
+                                // && 且取两个连续的方块，靠右的方块为0，靠左的方块有值
+                                j + 1 + k < this.array.length &&
+                                this.array[i][j + 1 + k] == 0 &&
+                                this.array[i][j + k] > 0
+                            ) {
+                                // i行，最后两个方块，最后一个方块为0，前一个方块不为0->前一个方块变为0，最后一个方块变为前一个方块的值，标记移动过。
+                                // i行，最后三个方块，两两从后面取出，然后这两个执行上面逻辑。就是后三个，为0的时候，就被向右移动。
+                                // i行，后4个方块。
+                                // i行，全部5个方块，进行移动。
+                                this.array[i][j + 1 + k] = this.array[i][j + k];
+                                this.array[i][j + k] = 0;
+                                canMove = true;
+                            } else if (
+                                // && 且取两个连续的方块，两方块值相等，且不为0；
+                                j + 1 + k < this.array.length &&
+                                this.array[i][j + 1 + k] == this.array[i][j + k] &&
+                                this.array[i][j + k] > 0
+                            ) {
+                                // i行，最后两个方块，两个方块值相等，右边方块变为2倍，左边方块变为0，标记移动过。
+                                // i行，最后三个方块，两两从后面取出，然后这两个执行上面逻辑。就是后三个，有两两相邻相等的，就被向右合并。
+                                // i行，后4个方块。
+                                // i行，全部5个方块，进行检查合并。
+                                this.array[i][j + 1 + k] = this.array[i][j + 1 + k] * 2;
+                                this.array[i][j + k] = 0;
+                                canMove = true;
+                                isGetScore = true;
+                                this.updateScore(this.array[i][j + 1 + k]);
+                            }
+                        }
+                    }
+                }
+            default:
+                break;
+        }
+        if (canMove) {
+            this.cleanAllItem();
+            for (let i = 0; i < this.array.length; i++) {
+                for (let j = 0; j < this.array[i].length; j++) {
+                    if (this.array[i][j] > 0) {
+                        let pos = v2(i, j);
+                        this.createItem(pos, this.array[i][j]);
+                    }
+                }
+            }
+            this.addRandomArray();
+        }
+    }
     private onTouchCancel(event: EventTouch) {
         if (this.gameType != 1) return;
+    }
+    /**
+     * 清理所有Tile子节点
+     * 从父节点的子节点列表中移除所有带有Tile组件的子节点
+     * 注意：从后向前遍历以避免数组索引问题
+     */
+    private cleanAllItem() {
+        let children = this.ndParent.children;
+        for (let i = children.length - 1; i > 0; i--) {
+            let tile = children[i].getComponent(Tile);
+            if (tile) {
+                this.ndParent.removeChild(children[i]);
+            }
+        }
+    }
+
+    private updateScore(score: number) {
+        this.userData.score += score;
+        if (this.userData.score > this.userData.bestScore) {
+            this.userData.bestScore = this.userData.score;
+        }
+
+        this.txtScore.string = this.userData.score + "";
+        this.txtBestScore.string = this.userData.bestScore + "";
+        this.saveUserInfo();
+    }
+    private saveUserInfo() {
+        sys.localStorage.setItem("userData", JSON.stringify(this.userData));
     }
 
     update(deltaTime: number) {}
