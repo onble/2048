@@ -53,6 +53,9 @@ export class Game extends Component {
     @property(Prefab)
     itemBg: Prefab = null!;
 
+    @property(LabelComponent)
+    txtOverScore: LabelComponent = null!;
+
     private userData: {
         score: number;
         array: number[][];
@@ -313,6 +316,7 @@ export class Game extends Component {
     // 获取用户信息
     private getUserInfo() {
         this.userData = JSON.parse(sys.localStorage.getItem("userData"));
+        console.warn("userdate", this.userData);
         if (this.userData == null) {
             this.userData = {
                 lv: 5,
@@ -434,24 +438,84 @@ export class Game extends Component {
         this.init();
     }
 
-    private onBtnRePlayClick() {}
+    private onBtnRePlayClick() {
+        this.gameType = 1;
+        this.userData.score = 0;
+        this.userData.arr_histroy = [];
+        this.txtBack.string = "撤回(0)";
+        this.userData.backNum = 3;
+        this.txtScore.string = "0";
+        this.cleanAllItem();
+        this.initArray(this.userData.lv);
+        this.addRandomArray();
+    }
 
-    private onBtnBackClick() {}
+    private onBtnBackClick() {
+        let len = this.userData.arr_histroy.length;
+        if (len >= 2 && this.userData.backNum > 0) {
+            this.userData.arr_histroy.pop();
+            // let str_arr = this.userData.arr_histroy[len - 2];
+            let arr = this.userData.arr_histroy[len - 2];
+            this.cleanAllItem();
+            for (let i = 0; i < this.array.length; i++) {
+                for (let j = 0; j < this.array[i].length; j++) {
+                    this.array[i][j] = arr[i][j];
+                    if (this.array[i][j] > 0) {
+                        let pos = v2(i, j);
+                        this.createItem(pos, this.array[i][j]);
+                    }
+                }
+            }
+            this.userData.backNum--;
+            let len1 = this.userData.arr_histroy.length - 1;
+            if (len1 <= 0) {
+                len = 0;
+            }
+            if (len1 > this.userData.backNum) {
+                len1 = this.userData.backNum;
+            }
+            this.txtBack.string = "撤回(" + len1 + ")";
+            this.saveUserInfo();
+        }
+    }
 
     private onBtnHomeClick() {
         this.initPanel();
         this.gameType = 0;
         this.startPanel.active = true;
+        this.cleanAllItem();
+        this.cleanAllItemBg();
+    }
+
+    private cleanAllItemBg() {
+        let children = this.ndParent.children;
+        for (let i = children.length - 1; i > 0; i--) {
+            let tile = children[i].getComponent(Tile);
+            if (!tile) {
+                this.ndParent.removeChild(children[i]);
+            }
+        }
     }
 
     private onOverBtnRePlayClick() {
         this.overPanel.active = false;
+        this.gameType = 1;
+        this.userData.score = 0;
+        this.userData.arr_histroy = [];
+        this.txtBack.string = "撤回(0)";
+        this.userData.backNum = 3;
+        this.txtScore.string = "0";
+        this.cleanAllItem();
+        this.initArray(this.userData.lv);
+        this.addRandomArray();
     }
 
     private onOverBtnHomeClick() {
         this.initPanel();
         this.gameType = 0;
         this.startPanel.active = true;
+        this.cleanAllItem();
+        this.cleanAllItemBg();
     }
 
     private onCheckOver() {
@@ -480,14 +544,15 @@ export class Game extends Component {
             this.gameType = 2;
             this.overPanel.active = true;
             let gameOverScore = this.userData.score;
+            this.txtOverScore.string = "获得" + gameOverScore + "分";
             this.userData.score = 0;
             this.userData.array = [];
             this.userData.arr_histroy = [];
             this.userData.backNum = 3;
             this.saveUserInfo();
         } else {
-            this.userData.arr_histroy.push(this.array);
-            this.userData.array = this.array;
+            this.userData.arr_histroy.push(JSON.parse(JSON.stringify(this.array)));
+            this.userData.array = JSON.parse(JSON.stringify(this.array));
             let len = this.userData.arr_histroy.length - 1;
             if (len > 10) {
                 this.userData.arr_histroy.shift();
