@@ -53,7 +53,14 @@ export class Game extends Component {
     @property(Prefab)
     itemBg: Prefab = null!;
 
-    private userData: any = null;
+    private userData: {
+        score: number;
+        array: number[][];
+        arr_histroy: number[][][];
+        backNum: number;
+        bestScore: number;
+        lv: number;
+    } = null;
     private jiange: number = 0;
     private itemWH: number = 0;
     private itemParentWh: number = 0;
@@ -372,6 +379,7 @@ export class Game extends Component {
                 this.array[ii][jj] = 2;
             }
             this.createItem(arr_0[i_random], this.array[ii][jj], true);
+            this.onCheckOver();
         }
     }
 
@@ -444,5 +452,51 @@ export class Game extends Component {
         this.initPanel();
         this.gameType = 0;
         this.startPanel.active = true;
+    }
+
+    private onCheckOver() {
+        let isOver = true;
+        for (let i = 0; i < this.array.length; i++) {
+            for (let j = 0; j < this.array[i].length; j++) {
+                if (this.array[i][j] == 0) {
+                    isOver = false;
+                }
+            }
+        }
+
+        for (let i = 0; i < this.array.length; i++) {
+            for (let j = 0; j < this.array[i].length; j++) {
+                if (j + 1 < this.array.length && this.array[i][j] == this.array[i][j + 1]) {
+                    // 横向有相邻可合并
+                    isOver = false;
+                } else if (i + 1 < this.array.length && this.array[i][j] == this.array[i + 1][j]) {
+                    // 纵向有相邻可合并
+                    isOver = false;
+                }
+            }
+        }
+
+        if (isOver) {
+            this.gameType = 2;
+            this.overPanel.active = true;
+            let gameOverScore = this.userData.score;
+            this.userData.score = 0;
+            this.userData.array = [];
+            this.userData.arr_histroy = [];
+            this.userData.backNum = 3;
+            this.saveUserInfo();
+        } else {
+            this.userData.arr_histroy.push(this.array);
+            this.userData.array = this.array;
+            let len = this.userData.arr_histroy.length - 1;
+            if (len > 10) {
+                this.userData.arr_histroy.shift();
+            }
+            if (len > this.userData.backNum) {
+                len = this.userData.backNum;
+            }
+            this.txtBack.string = "撤回(" + len + ")";
+            this.saveUserInfo();
+        }
     }
 }
