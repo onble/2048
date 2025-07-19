@@ -1,5 +1,7 @@
 import {
     _decorator,
+    AudioClip,
+    AudioSource,
     Component,
     EventTouch,
     instantiate,
@@ -55,6 +57,12 @@ export class Game extends Component {
 
     @property(LabelComponent)
     txtOverScore: LabelComponent = null!;
+
+    @property(AudioClip)
+    soundMove: AudioClip = null!;
+
+    @property(AudioClip)
+    soundGetScore: AudioClip = null!;
 
     private userData: {
         score: number;
@@ -255,6 +263,12 @@ export class Game extends Component {
                 break;
         }
         if (canMove) {
+            let ad: AudioSource = new AudioSource();
+            if (isGetScore) {
+                ad.playOneShot(this.soundGetScore);
+            } else {
+                ad.playOneShot(this.soundMove);
+            }
             this.cleanAllItem();
             for (let i = 0; i < this.array.length; i++) {
                 for (let j = 0; j < this.array[i].length; j++) {
@@ -342,10 +356,30 @@ export class Game extends Component {
         this.txtLv.string = lv + "x" + lv;
         this.txtScore.string = this.userData.score.toString();
         this.txtBestScore.string = this.userData.bestScore + "";
-        this.txtBack.string = "撤回(" + this.userData.backNum + ")";
 
-        this.initArray(lv);
-        this.addRandomArray();
+        let len = this.userData.arr_histroy.length - 1;
+        if (len <= 0) {
+            len = 0;
+        }
+        if (len > this.userData.backNum) {
+            len = this.userData.backNum;
+        }
+        this.txtBack.string = "撤回(" + len + ")";
+
+        if (this.userData.array.length == 0) {
+            this.initArray(lv);
+            this.addRandomArray();
+        } else {
+            this.array = this.userData.array;
+            for (let i = 0; i < this.array.length; i++) {
+                for (let j = 0; j < this.array[i].length; j++) {
+                    if (this.array[i][j] > 0) {
+                        let pos = v2(i, j);
+                        this.createItem(pos, this.array[i][j]);
+                    }
+                }
+            }
+        }
     }
 
     // 初始化数组

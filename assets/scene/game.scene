@@ -4236,6 +4236,14 @@
     "txtOverScore": {
       "__id__": 91
     },
+    "soundMove": {
+      "__uuid__": "af8e2e0d-9513-4ba1-9226-7016853092b8",
+      "__expectedType__": "cc.AudioClip"
+    },
+    "soundGetScore": {
+      "__uuid__": "4ee56c7b-2735-48e3-8a01-ac218f980b72",
+      "__expectedType__": "cc.AudioClip"
+    },
     "_id": "51LOlBqW9Ac7BZTX6fThH4"
   },
   {
